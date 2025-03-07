@@ -1,9 +1,8 @@
 package io.robothouse.urlshortener.controller;
 
-import io.robothouse.urlshortener.dto.UrlRequestDTO;
-import io.robothouse.urlshortener.dto.UrlResponseDTO;
-import io.robothouse.urlshortener.model.LongUrl;
 import io.robothouse.urlshortener.model.Url;
+import io.robothouse.urlshortener.model.UrlRequest;
+import io.robothouse.urlshortener.model.UrlResponse;
 import io.robothouse.urlshortener.model.response.BaseResponse;
 import io.robothouse.urlshortener.model.response.Fail;
 import io.robothouse.urlshortener.model.response.Success;
@@ -23,18 +22,19 @@ public class UrlController {
     }
 
     @PostMapping("/")
-    public BaseResponse urlAdd(@RequestBody UrlRequestDTO req, HttpServletResponse res) {
+    public BaseResponse urlAdd(@RequestBody UrlRequest req, HttpServletResponse res) {
         UUID requestId = UUID.randomUUID();
+        String baseUrl = "http://localhost:8080/";
 
         try {
-            String validLongUrl = new LongUrl(req.longUrl()).parse();
+            String validLongUrl = req.parseLongUrl();
             String key = Url.createKey(validLongUrl);
-            String shortUrl = "http://localhost:8080/" + key;
+            String shortUrl = baseUrl + key;
 
-            urlRedisService.add(new Url(key, req.longUrl(), shortUrl));
+            urlRedisService.add(new Url(key, validLongUrl, shortUrl));
 
             res.setStatus(HttpServletResponse.SC_OK);
-            return new Success(requestId, new UrlResponseDTO(shortUrl));
+            return new Success(requestId, new UrlResponse(shortUrl));
         } catch (Throwable err) {
             return new Fail(requestId, err.getMessage()).andHandleException(res, err);
         }

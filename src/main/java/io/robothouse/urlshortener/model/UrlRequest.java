@@ -6,14 +6,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public record LongUrl(String longUrl) {
+public record UrlRequest(String longUrl) {
 
-    public String parse() throws HttpException {
+    public String parseLongUrl() throws HttpException {
         if (longUrl == null || longUrl.isBlank()) {
-            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "\"longUrl\" cannot be null or empty");
+            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "'longUrl' cannot be null or empty");
         }
         if (!isValidUrl()) {
-            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "\"longUrl\" is not a valid URL");
+            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "'longUrl' is not a valid URL");
         }
         return this.longUrl;
     }

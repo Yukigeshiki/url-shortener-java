@@ -1,8 +1,8 @@
 package io.robothouse.urlshortener.lib.exception;
 
 public class HttpException extends Throwable {
-    int statusCode;
-    String message;
+    private final int statusCode;
+    private final String message;
 
     public HttpException(int statusCode, String message) {
         this.statusCode = statusCode;
