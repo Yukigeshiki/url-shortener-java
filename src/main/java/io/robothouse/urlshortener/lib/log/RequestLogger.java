@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,6 +16,7 @@ import java.util.UUID;
 @Component
 public class RequestLogger extends OncePerRequestFilter {
 
+    private static final Logger logger = LoggerFactory.getLogger(RequestLogger.class);
     private static final String REQUEST_ID_KEY = "requestId";
 
     @Override
@@ -21,7 +24,7 @@ public class RequestLogger extends OncePerRequestFilter {
         String requestId = UUID.randomUUID().toString();
         MDC.put(REQUEST_ID_KEY, requestId);
 
-        logger.info(String.format("Incoming request: %s %s", req.getMethod(), req.getRequestURI()));
+        logger.info("Incoming request: {} {}", req.getMethod(), req.getRequestURI());
 
         try {
             filterChain.doFilter(req, res);

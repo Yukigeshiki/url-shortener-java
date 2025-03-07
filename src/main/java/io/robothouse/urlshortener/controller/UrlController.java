@@ -8,6 +8,9 @@ import io.robothouse.urlshortener.model.response.Fail;
 import io.robothouse.urlshortener.model.response.Success;
 import io.robothouse.urlshortener.service.UrlRedisService;
 import jakarta.servlet.http.HttpServletResponse;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
@@ -15,6 +18,7 @@ import java.util.UUID;
 @RestController
 public class UrlController {
 
+    private static final Logger logger = LoggerFactory.getLogger(UrlController.class);
     private final UrlRedisService urlRedisService;
 
     public UrlController(UrlRedisService urlRedisService) {
@@ -22,19 +26,37 @@ public class UrlController {
     }
 
     @PostMapping("/")
-    public BaseResponse urlAdd(@RequestBody UrlRequest req, HttpServletResponse res) {
-        UUID requestId = UUID.randomUUID();
+    public BaseResponse urlAdd(@RequestBody UrlRequest reqPayload, HttpServletResponse res) {
+        String requestId = MDC.get("requestId");
         String baseUrl = "http://localhost:8080/";
 
+        logger.info("request payload: {}", reqPayload);
+
         try {
-            String validLongUrl = req.parseLongUrl();
+            String validLongUrl = reqPayload.parseLongUrl();
             String key = Url.createKey(validLongUrl);
             String shortUrl = baseUrl + key;
 
-            urlRedisService.add(new Url(key, validLongUrl, shortUrl));
+            Url existingUrl = urlRedisService.get(key);
+            if (existingUrl != null) {
+                if (existingUrl.longUrl().equals(validLongUrl)) {
+                    res.setStatus(HttpServletResponse.SC_OK);
+                    return new Success(requestId, new UrlResponse(shortUrl));
+                } else {
+                    key = Url.createKey(validLongUrl + UUID.randomUUID());
+                    shortUrl = baseUrl + key;
+                }
+            }
+
+            Url url = new Url(key, validLongUrl, shortUrl);
+            urlRedisService.add(url);
+            logger.info("added to Redis: {}", url);
 
             res.setStatus(HttpServletResponse.SC_OK);
-            return new Success(requestId, new UrlResponse(shortUrl));
+            UrlResponse resPayload = new UrlResponse(shortUrl);
+            logger.info("request payload: {}", resPayload);
+
+            return new Success(requestId, resPayload);
         } catch (Throwable err) {
             return new Fail(requestId, err.getMessage()).andHandleException(res, err);
         }
