@@ -2,10 +2,11 @@ package io.robothouse.urlshortener.controller;
 
 import io.robothouse.urlshortener.dto.UrlRequestDTO;
 import io.robothouse.urlshortener.dto.UrlResponseDTO;
+import io.robothouse.urlshortener.model.LongUrl;
+import io.robothouse.urlshortener.model.Url;
 import io.robothouse.urlshortener.model.response.BaseResponse;
 import io.robothouse.urlshortener.model.response.Fail;
 import io.robothouse.urlshortener.model.response.Success;
-import io.robothouse.urlshortener.model.Url;
 import io.robothouse.urlshortener.service.UrlRedisService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.*;
@@ -26,7 +27,8 @@ public class UrlController {
         UUID requestId = UUID.randomUUID();
 
         try {
-            String key = Url.createKey(req.longUrl());
+            String validLongUrl = new LongUrl(req.longUrl()).parse();
+            String key = Url.createKey(validLongUrl);
             String shortUrl = "http://localhost:8080/" + key;
 
             urlRedisService.add(new Url(key, req.longUrl(), shortUrl));
