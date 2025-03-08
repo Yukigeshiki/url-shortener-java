@@ -30,7 +30,7 @@ public class UrlController {
         String requestId = MDC.get("requestId");
         String baseUrl = "http://localhost:8080/";
 
-        logger.info("request payload: {}", reqPayload);
+        logger.info("Request payload: {}", reqPayload);
 
         try {
             String validLongUrl = reqPayload.parseLongUrl();
@@ -50,11 +50,11 @@ public class UrlController {
 
             Url url = new Url(key, validLongUrl, shortUrl);
             urlRedisService.add(url);
-            logger.info("added to Redis: {}", url);
+            logger.info("Added to Redis: {}", url);
 
             res.setStatus(HttpServletResponse.SC_OK);
             UrlResponse resPayload = new UrlResponse(shortUrl);
-            logger.info("request payload: {}", resPayload);
+            logger.info("Response payload: {}", resPayload);
 
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
