@@ -11,11 +11,11 @@ public record UrlRequest(String longUrl) {
     public String parseLongUrl() throws HttpException {
         if (longUrl == null || longUrl.isBlank()) {
             throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "'longUrl' cannot be null or empty");
-        }
-        if (!isValidUrl()) {
+        } else if (!isValidUrl()) {
             throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "'longUrl' is not a valid URL");
+        } else {
+            return longUrl;
         }
-        return this.longUrl;
     }
 
     private boolean isValidUrl() {

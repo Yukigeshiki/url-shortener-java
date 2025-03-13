@@ -41,7 +41,9 @@ public class UrlController {
             if (existingUrl != null) {
                 if (existingUrl.longUrl().equals(validLongUrl)) {
                     res.setStatus(HttpServletResponse.SC_OK);
-                    return new Success(requestId, new UrlResponse(shortUrl));
+                    UrlResponse resPayload = new UrlResponse(key, shortUrl);
+                    logger.info("Response payload: {}", resPayload);
+                    return new Success(requestId, resPayload);
                 } else {
                     key = Url.createKey(validLongUrl + UUID.randomUUID());
                     shortUrl = baseUrl + key;
@@ -53,11 +55,11 @@ public class UrlController {
             logger.info("Added to Redis: {}", url);
 
             res.setStatus(HttpServletResponse.SC_OK);
-            UrlResponse resPayload = new UrlResponse(shortUrl);
+            UrlResponse resPayload = new UrlResponse(key, shortUrl);
             logger.info("Response payload: {}", resPayload);
-
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
+            logger.error("Request failed with error: {}", err.getMessage());
             return new Fail(requestId, err.getMessage()).andHandleException(res, err);
         }
     }

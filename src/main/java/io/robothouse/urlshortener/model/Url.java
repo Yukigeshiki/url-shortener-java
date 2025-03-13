@@ -14,8 +14,7 @@ public record Url(@Id String key, String longUrl, String shortUrl) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] encodedHash = digest.digest(longUrl.getBytes(StandardCharsets.UTF_8));
-
-            return bytesToHex(encodedHash).substring(0, 8);
+            return bytesToHex(encodedHash).substring(0, 12);
         } catch (NoSuchAlgorithmException e) {
             // Algorithm is guaranteed to be available (hardcoded)
             return null;
