@@ -10,6 +10,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.SmartView;
+import org.springframework.web.servlet.view.RedirectView;
 
 import java.util.UUID;
 
@@ -27,7 +29,6 @@ public class UrlController {
     public BaseResponse urlAdd(@RequestBody UrlAddReq reqPayload, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         String baseUrl = "http://localhost:8080/";
-
         logger.info("Request payload: {}", reqPayload);
 
         try {
@@ -63,22 +64,33 @@ public class UrlController {
     }
 
     @GetMapping("/{key}")
-    public BaseResponse urlRedirect(@PathVariable("key") Key key, HttpServletResponse res) {
+    public SmartView urlRedirect(@PathVariable("key") Key key, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
-        return null;
-    }
-
-    @DeleteMapping("/{key}")
-    public BaseResponse urlDelete(@PathVariable("key") Key key, HttpServletResponse res) {
-        String requestId = MDC.get("requestId");
-
         logger.info("Request url param: {}", key);
 
         try {
             String validKey = key.parseKey();
 
-            urlRedisService.delete(validKey);
-            logger.info("Deleted Url from redis with key: {}", validKey);
+            Url url = urlRedisService.checkExistsAndGet(validKey);
+            logger.info("Url retrieved from redis: {}", url);
+
+            return new RedirectView(url.longUrl());
+        } catch (Throwable err) {
+            logger.error("Request failed with error: {}", err.getMessage());
+            return new Fail(requestId, err.getMessage()).andHandleException(res, err);
+        }
+    }
+
+    @DeleteMapping("/{key}")
+    public BaseResponse urlDelete(@PathVariable("key") Key key, HttpServletResponse res) {
+        String requestId = MDC.get("requestId");
+        logger.info("Request url param: {}", key);
+
+        try {
+            String validKey = key.parseKey();
+
+            urlRedisService.checkExistsAndDelete(validKey);
+            logger.info("Deleted Url from redis with key: '{}'", validKey);
 
             res.setStatus(HttpServletResponse.SC_OK);
             UrlDeleteRes resPayload = new UrlDeleteRes("Url deleted successfully");
