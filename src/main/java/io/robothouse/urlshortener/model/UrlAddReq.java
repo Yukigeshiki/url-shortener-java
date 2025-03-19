@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public record UrlRequest(String longUrl) {
+public record UrlAddReq(String longUrl) {
 
     public String parseLongUrl() throws HttpException {
         if (longUrl == null || longUrl.isBlank()) {
@@ -21,7 +21,6 @@ public record UrlRequest(String longUrl) {
     private boolean isValidUrl() {
         try {
             URI uri = new URI(longUrl);
-            // Check if the URI has a valid scheme and host
             return uri.getScheme() != null && uri.getHost() != null;
         } catch (URISyntaxException e) {
             return false;

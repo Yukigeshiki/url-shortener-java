@@ -1,8 +1,6 @@
 package io.robothouse.urlshortener.controller;
 
-import io.robothouse.urlshortener.model.Url;
-import io.robothouse.urlshortener.model.UrlRequest;
-import io.robothouse.urlshortener.model.UrlResponse;
+import io.robothouse.urlshortener.model.*;
 import io.robothouse.urlshortener.model.response.BaseResponse;
 import io.robothouse.urlshortener.model.response.Fail;
 import io.robothouse.urlshortener.model.response.Success;
@@ -26,7 +24,7 @@ public class UrlController {
     }
 
     @PostMapping("/")
-    public BaseResponse urlAdd(@RequestBody UrlRequest reqPayload, HttpServletResponse res) {
+    public BaseResponse urlAdd(@RequestBody UrlAddReq reqPayload, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         String baseUrl = "http://localhost:8080/";
 
@@ -41,7 +39,7 @@ public class UrlController {
             if (existingUrl != null) {
                 if (existingUrl.longUrl().equals(validLongUrl)) {
                     res.setStatus(HttpServletResponse.SC_OK);
-                    UrlResponse resPayload = new UrlResponse(key, shortUrl);
+                    UrlAddRes resPayload = new UrlAddRes(key, shortUrl);
                     logger.info("Response payload: {}", resPayload);
                     return new Success(requestId, resPayload);
                 } else {
@@ -55,7 +53,7 @@ public class UrlController {
             logger.info("Added to Redis: {}", url);
 
             res.setStatus(HttpServletResponse.SC_OK);
-            UrlResponse resPayload = new UrlResponse(key, shortUrl);
+            UrlAddRes resPayload = new UrlAddRes(key, shortUrl);
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
@@ -65,12 +63,30 @@ public class UrlController {
     }
 
     @GetMapping("/{key}")
-    public BaseResponse urlRedirect(@PathVariable("key") String key) {
+    public BaseResponse urlRedirect(@PathVariable("key") Key key, HttpServletResponse res) {
+        String requestId = MDC.get("requestId");
         return null;
     }
 
     @DeleteMapping("/{key}")
-    public BaseResponse urlDelete(@PathVariable("key") String key) {
-        return null;
+    public BaseResponse urlDelete(@PathVariable("key") Key key, HttpServletResponse res) {
+        String requestId = MDC.get("requestId");
+
+        logger.info("Request url param: {}", key);
+
+        try {
+            String validKey = key.parseKey();
+
+            urlRedisService.delete(validKey);
+            logger.info("Deleted Url from redis with key: {}", validKey);
+
+            res.setStatus(HttpServletResponse.SC_OK);
+            UrlDeleteRes resPayload = new UrlDeleteRes("Url deleted successfully");
+            logger.info("Response payload: {}", resPayload);
+            return new Success(requestId, resPayload);
+        } catch (Throwable err) {
+            logger.error("Request failed with error: {}", err.getMessage());
+            return new Fail(requestId, err.getMessage()).andHandleException(res, err);
+        }
     }
 }
