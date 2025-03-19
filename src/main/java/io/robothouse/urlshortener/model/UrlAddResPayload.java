@@ -1,5 +1,5 @@
 package io.robothouse.urlshortener.model;
 
 
-public record UrlAddResPayload(String key, String shortUrl) implements Model {
+public record UrlAddResPayload(String key, String shortUrl) implements ResPayload {
 }

@@ -1,4 +1,4 @@
 package io.robothouse.urlshortener.model;
 
-public interface Model {
+public interface ResPayload {
 }

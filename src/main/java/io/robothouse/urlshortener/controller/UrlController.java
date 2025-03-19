@@ -60,7 +60,7 @@ public class UrlController {
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            manageErrorType(err, res);
+            manageExceptionType(err, res);
             logger.error("Request failed with error: {}", err.toString());
             return new Fail(requestId, err.getMessage());
         }
@@ -77,7 +77,7 @@ public class UrlController {
             logger.info("Url retrieved from redis: {}", url);
             return new RedirectView(url.longUrl());
         } catch (Throwable err) {
-            manageErrorType(err, res);
+            manageExceptionType(err, res);
             logger.error("Request failed with error: {}", err.toString());
             return new FailRedirect(requestId, err.getMessage());
         }
@@ -98,13 +98,13 @@ public class UrlController {
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            manageErrorType(err, res);
+            manageExceptionType(err, res);
             logger.error("Request failed with error: {}", err.toString());
             return new Fail(requestId, err.getMessage());
         }
     }
     
-    private static void manageErrorType(Throwable err, HttpServletResponse res) {
+    private static void manageExceptionType(Throwable err, HttpServletResponse res) {
         if (err instanceof HttpException) {
             res.setStatus(((HttpException) err).getStatusCode());
         } else {
