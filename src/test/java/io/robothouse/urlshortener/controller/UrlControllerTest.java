@@ -1,8 +1,12 @@
 package io.robothouse.urlshortener.controller;
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
-import io.robothouse.urlshortener.model.*;
+import io.robothouse.urlshortener.model.KeyPathVar;
+import io.robothouse.urlshortener.model.Url;
+import io.robothouse.urlshortener.model.UrlAddReqPayload;
 import io.robothouse.urlshortener.model.response.BaseResponse;
+import io.robothouse.urlshortener.model.response.Fail;
+import io.robothouse.urlshortener.model.response.FailRedirect;
 import io.robothouse.urlshortener.model.response.Success;
 import io.robothouse.urlshortener.service.UrlRedisService;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,6 +76,30 @@ class UrlControllerTest {
 
         assertEquals(HttpStatus.OK.value(), response.getStatus());
         assertInstanceOf(Success.class, result);
+        verify(urlRedisService, times(1)).checkExistsAndDelete(anyString());
+    }
+
+    @Test
+    void urlRedirectThrowsExceptionWhenUrlNotFound() throws HttpException {
+        KeyPathVar key = new KeyPathVar("000000000000");
+        when(urlRedisService.checkExistsAndGet(anyString()))
+                .thenThrow(new HttpException(HttpStatus.NOT_FOUND.value(), "Url not found"));
+
+        SmartView result = urlController.urlRedirect(key, response);
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
+        assertInstanceOf(FailRedirect.class, result);
+        verify(urlRedisService, times(1)).checkExistsAndGet(anyString());
+    }
+
+    @Test
+    void urlDeleteThrowsExceptionWhenUrlNotFound() throws HttpException {
+        KeyPathVar key = new KeyPathVar("000000000000");
+        doThrow(new HttpException(HttpStatus.NOT_FOUND.value(), "Url not found"))
+                .when(urlRedisService).checkExistsAndDelete(anyString());
+
+        BaseResponse result = urlController.urlDelete(key, response);
+        assertEquals(HttpStatus.NOT_FOUND.value(), response.getStatus());
+        assertInstanceOf(Fail.class, result);
         verify(urlRedisService, times(1)).checkExistsAndDelete(anyString());
     }
 }
