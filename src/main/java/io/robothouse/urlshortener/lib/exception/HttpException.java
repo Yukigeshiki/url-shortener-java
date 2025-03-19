@@ -16,4 +16,8 @@ public class HttpException extends Throwable {
     public String getMessage() {
         return message;
     }
+
+    public String toString() {
+        return "HttpException[statusCode=" + statusCode + ", message=" + message + "]";
+    }
 }

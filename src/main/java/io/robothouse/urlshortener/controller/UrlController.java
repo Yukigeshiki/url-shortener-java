@@ -1,8 +1,10 @@
 package io.robothouse.urlshortener.controller;
 
+import io.robothouse.urlshortener.lib.exception.HttpException;
 import io.robothouse.urlshortener.model.*;
 import io.robothouse.urlshortener.model.response.BaseResponse;
 import io.robothouse.urlshortener.model.response.Fail;
+import io.robothouse.urlshortener.model.response.FailRedirect;
 import io.robothouse.urlshortener.model.response.Success;
 import io.robothouse.urlshortener.service.UrlRedisService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -58,8 +60,9 @@ public class UrlController {
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            logger.error("Request failed with error: {}", err.getMessage());
-            return new Fail(requestId, err.getMessage()).andHandleException(res, err);
+            manageErrorType(err, res);
+            logger.error("Request failed with error: {}", err.toString());
+            return new Fail(requestId, err.getMessage());
         }
     }
 
@@ -74,8 +77,9 @@ public class UrlController {
             logger.info("Url retrieved from redis: {}", url);
             return new RedirectView(url.longUrl());
         } catch (Throwable err) {
-            logger.error("Request failed with error: {}", err.getMessage());
-            return new Fail(requestId, err.getMessage()).andHandleException(res, err);
+            manageErrorType(err, res);
+            logger.error("Request failed with error: {}", err.toString());
+            return new FailRedirect(requestId, err.getMessage());
         }
     }
 
@@ -94,8 +98,18 @@ public class UrlController {
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            logger.error("Request failed with error: {}", err.getMessage());
-            return new Fail(requestId, err.getMessage()).andHandleException(res, err);
+            manageErrorType(err, res);
+            logger.error("Request failed with error: {}", err.toString());
+            return new Fail(requestId, err.getMessage());
+        }
+    }
+    
+    private static void manageErrorType(Throwable err, HttpServletResponse res) {
+        if (err instanceof HttpException) {
+            res.setStatus(((HttpException) err).getStatusCode());
+        } else {
+            err.printStackTrace();
+            res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
 }
