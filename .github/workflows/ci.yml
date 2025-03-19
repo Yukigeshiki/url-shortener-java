@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths-ignore:
       - 'README.md'
+      - 'url-shortener.postman_collection.json'
 
 jobs:
   build:
