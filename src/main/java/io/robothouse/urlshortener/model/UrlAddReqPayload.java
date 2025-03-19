@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public record UrlAddReq(String longUrl) {
+public record UrlAddReqPayload(String longUrl) {
 
     public String parseLongUrl() throws HttpException {
         if (longUrl == null || longUrl.isBlank()) {

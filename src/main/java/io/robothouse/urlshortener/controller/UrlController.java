@@ -26,7 +26,7 @@ public class UrlController {
     }
 
     @PostMapping("/")
-    public BaseResponse urlAdd(@RequestBody UrlAddReq reqPayload, HttpServletResponse res) {
+    public BaseResponse urlAdd(@RequestBody UrlAddReqPayload reqPayload, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         String baseUrl = "http://localhost:8080/";
         logger.info("Request payload: {}", reqPayload);
@@ -40,7 +40,7 @@ public class UrlController {
             if (existingUrl != null) {
                 if (existingUrl.longUrl().equals(validLongUrl)) {
                     res.setStatus(HttpServletResponse.SC_OK);
-                    UrlAddRes resPayload = new UrlAddRes(key, shortUrl);
+                    UrlAddResPayload resPayload = new UrlAddResPayload(key, shortUrl);
                     logger.info("Response payload: {}", resPayload);
                     return new Success(requestId, resPayload);
                 } else {
@@ -54,7 +54,7 @@ public class UrlController {
             logger.info("Added to Redis: {}", url);
 
             res.setStatus(HttpServletResponse.SC_OK);
-            UrlAddRes resPayload = new UrlAddRes(key, shortUrl);
+            UrlAddResPayload resPayload = new UrlAddResPayload(key, shortUrl);
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
@@ -64,16 +64,14 @@ public class UrlController {
     }
 
     @GetMapping("/{key}")
-    public SmartView urlRedirect(@PathVariable("key") Key key, HttpServletResponse res) {
+    public SmartView urlRedirect(@PathVariable("key") KeyPathVar key, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         logger.info("Request url param: {}", key);
 
         try {
             String validKey = key.parseKey();
-
             Url url = urlRedisService.checkExistsAndGet(validKey);
             logger.info("Url retrieved from redis: {}", url);
-
             return new RedirectView(url.longUrl());
         } catch (Throwable err) {
             logger.error("Request failed with error: {}", err.getMessage());
@@ -82,18 +80,17 @@ public class UrlController {
     }
 
     @DeleteMapping("/{key}")
-    public BaseResponse urlDelete(@PathVariable("key") Key key, HttpServletResponse res) {
+    public BaseResponse urlDelete(@PathVariable("key") KeyPathVar key, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         logger.info("Request url param: {}", key);
 
         try {
             String validKey = key.parseKey();
-
             urlRedisService.checkExistsAndDelete(validKey);
             logger.info("Deleted Url from redis with key: '{}'", validKey);
 
             res.setStatus(HttpServletResponse.SC_OK);
-            UrlDeleteRes resPayload = new UrlDeleteRes("Url deleted successfully");
+            UrlDeleteResPayload resPayload = new UrlDeleteResPayload(String.format("Url with key '%s' deleted successfully", validKey));
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {

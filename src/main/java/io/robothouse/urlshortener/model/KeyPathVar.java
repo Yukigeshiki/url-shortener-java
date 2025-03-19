@@ -3,7 +3,7 @@ package io.robothouse.urlshortener.model;
 import io.robothouse.urlshortener.lib.exception.HttpException;
 import jakarta.servlet.http.HttpServletResponse;
 
-public record Key(String key) {
+public record KeyPathVar(String key) {
 
     public String parseKey() throws HttpException {
         if (key.length() != 12) {

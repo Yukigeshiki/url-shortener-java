@@ -37,7 +37,7 @@ class UrlControllerTest {
 
     @Test
     void testUrlAdd() {
-        UrlAddReq reqPayload = new UrlAddReq("https://example.com");
+        UrlAddReqPayload reqPayload = new UrlAddReqPayload("https://example.com");
 
         when(urlRedisService.get(anyString())).thenReturn(null);
         doNothing().when(urlRedisService).add(any(Url.class));
@@ -51,7 +51,7 @@ class UrlControllerTest {
 
     @Test
     void testUrlRedirect() throws HttpException {
-        Key key = new Key("000000000000");
+        KeyPathVar key = new KeyPathVar("000000000000");
         Url url = new Url("000000000000", "https://example.com", "http://localhost:8080/000000000000");
 
         when(urlRedisService.checkExistsAndGet(anyString())).thenReturn(url);
@@ -64,7 +64,7 @@ class UrlControllerTest {
 
     @Test
     void testUrlDelete() throws HttpException {
-        Key key = new Key("000000000000");
+        KeyPathVar key = new KeyPathVar("000000000000");
 
         doNothing().when(urlRedisService).checkExistsAndDelete(anyString());
 

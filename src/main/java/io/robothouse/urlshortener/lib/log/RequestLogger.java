@@ -23,7 +23,6 @@ public class RequestLogger extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest req, HttpServletResponse res, FilterChain filterChain) throws ServletException, IOException {
         String requestId = UUID.randomUUID().toString();
         MDC.put(REQUEST_ID_KEY, requestId);
-
         logger.info("Incoming request: {} {}", req.getMethod(), req.getRequestURI());
 
         try {
