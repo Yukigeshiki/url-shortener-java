@@ -1,4 +1,4 @@
-package io.robothouse.urlshortener.model;
+package io.robothouse.urlshortener.model.url;
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
 import jakarta.servlet.http.HttpServletResponse;
@@ -6,7 +6,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.List;
 
-public record KeyPathVar(String key) {
+public record UrlKeyPathVar(String key) {
 
     public String parseKey() throws HttpException {
         ArrayList<String> validationErrors = new ArrayList<>(List.of());

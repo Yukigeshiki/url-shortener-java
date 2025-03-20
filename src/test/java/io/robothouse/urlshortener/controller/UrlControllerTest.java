@@ -1,9 +1,9 @@
 package io.robothouse.urlshortener.controller;
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
-import io.robothouse.urlshortener.model.KeyPathVar;
-import io.robothouse.urlshortener.model.Url;
-import io.robothouse.urlshortener.model.UrlAddReqPayload;
+import io.robothouse.urlshortener.model.url.UrlKeyPathVar;
+import io.robothouse.urlshortener.model.url.Url;
+import io.robothouse.urlshortener.model.url.UrlAddReqPayload;
 import io.robothouse.urlshortener.model.response.BaseResponse;
 import io.robothouse.urlshortener.model.response.Fail;
 import io.robothouse.urlshortener.model.response.FailRedirect;
@@ -55,7 +55,7 @@ class UrlControllerTest {
 
     @Test
     void testUrlRedirect() throws HttpException {
-        KeyPathVar key = new KeyPathVar("000000000000");
+        UrlKeyPathVar key = new UrlKeyPathVar("000000000000");
         Url url = new Url("000000000000", "https://example.com", "http://localhost:8080/000000000000");
 
         when(urlRedisService.checkExistsAndGet(anyString())).thenReturn(url);
@@ -68,7 +68,7 @@ class UrlControllerTest {
 
     @Test
     void testUrlDelete() throws HttpException {
-        KeyPathVar key = new KeyPathVar("000000000000");
+        UrlKeyPathVar key = new UrlKeyPathVar("000000000000");
 
         doNothing().when(urlRedisService).checkExistsAndDelete(anyString());
 
@@ -81,7 +81,7 @@ class UrlControllerTest {
 
     @Test
     void urlRedirectThrowsExceptionWhenUrlNotFound() throws HttpException {
-        KeyPathVar key = new KeyPathVar("000000000000");
+        UrlKeyPathVar key = new UrlKeyPathVar("000000000000");
         when(urlRedisService.checkExistsAndGet(anyString()))
                 .thenThrow(new HttpException(HttpStatus.NOT_FOUND.value(), "Url not found"));
 
@@ -93,7 +93,7 @@ class UrlControllerTest {
 
     @Test
     void urlDeleteThrowsExceptionWhenUrlNotFound() throws HttpException {
-        KeyPathVar key = new KeyPathVar("000000000000");
+        UrlKeyPathVar key = new UrlKeyPathVar("000000000000");
         doThrow(new HttpException(HttpStatus.NOT_FOUND.value(), "Url not found"))
                 .when(urlRedisService).checkExistsAndDelete(anyString());
 

@@ -1,4 +1,4 @@
-package io.robothouse.urlshortener.model;
+package io.robothouse.urlshortener.model.url;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;

@@ -2,7 +2,7 @@ package io.robothouse.urlshortener.service;
 
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
-import io.robothouse.urlshortener.model.Url;
+import io.robothouse.urlshortener.model.url.Url;
 import io.robothouse.urlshortener.repository.UrlRepository;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;

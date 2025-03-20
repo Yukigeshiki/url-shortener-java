@@ -1,4 +1,4 @@
-package io.robothouse.urlshortener.model;
+package io.robothouse.urlshortener.model.url;
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
 import jakarta.servlet.http.HttpServletResponse;

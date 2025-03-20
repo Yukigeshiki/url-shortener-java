@@ -1,11 +1,11 @@
 package io.robothouse.urlshortener.controller;
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
-import io.robothouse.urlshortener.model.*;
 import io.robothouse.urlshortener.model.response.BaseResponse;
 import io.robothouse.urlshortener.model.response.Fail;
 import io.robothouse.urlshortener.model.response.FailRedirect;
 import io.robothouse.urlshortener.model.response.Success;
+import io.robothouse.urlshortener.model.url.*;
 import io.robothouse.urlshortener.service.UrlRedisService;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public class UrlController {
     }
 
     @GetMapping("/{key}")
-    public SmartView urlRedirect(@PathVariable("key") KeyPathVar key, HttpServletResponse res) {
+    public SmartView urlRedirect(@PathVariable("key") UrlKeyPathVar key, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         logger.info("Request url param: {}", key);
 
@@ -83,7 +83,7 @@ public class UrlController {
     }
 
     @DeleteMapping("/{key}")
-    public BaseResponse urlDelete(@PathVariable("key") KeyPathVar key, HttpServletResponse res) {
+    public BaseResponse urlDelete(@PathVariable("key") UrlKeyPathVar key, HttpServletResponse res) {
         String requestId = MDC.get("requestId");
         logger.info("Request url param: {}", key);
 

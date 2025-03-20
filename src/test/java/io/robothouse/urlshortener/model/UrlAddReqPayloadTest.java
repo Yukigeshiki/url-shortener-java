@@ -1,6 +1,7 @@
 package io.robothouse.urlshortener.model;
 
 import io.robothouse.urlshortener.lib.exception.HttpException;
+import io.robothouse.urlshortener.model.url.UrlAddReqPayload;
 import jakarta.servlet.http.HttpServletResponse;
 import org.junit.jupiter.api.Test;
 
