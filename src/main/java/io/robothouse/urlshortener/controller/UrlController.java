@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.SmartView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Arrays;
 import java.util.UUID;
 
 @RestController
@@ -39,7 +40,7 @@ public class UrlController {
             String shortUrl = baseUrl + key;
 
             Url existingUrl = urlRedisService.get(key);
-            if (existingUrl != null) {
+            while (existingUrl != null) {
                 if (existingUrl.longUrl().equals(validLongUrl)) {
                     res.setStatus(HttpServletResponse.SC_OK);
                     UrlAddResPayload resPayload = new UrlAddResPayload(key, shortUrl);
@@ -48,19 +49,19 @@ public class UrlController {
                 } else {
                     key = Url.createKey(validLongUrl + UUID.randomUUID());
                     shortUrl = baseUrl + key;
+                    existingUrl = urlRedisService.get(key);
                 }
             }
 
             Url url = new Url(key, validLongUrl, shortUrl);
             urlRedisService.add(url);
             logger.info("Added to Redis: {}", url);
-
             res.setStatus(HttpServletResponse.SC_OK);
             UrlAddResPayload resPayload = new UrlAddResPayload(key, shortUrl);
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            manageExceptionType(err, res);
+            setResStatus(err, res);
             logger.error("Request failed with error: {}", err.toString());
             return new Fail(requestId, err.getMessage());
         }
@@ -77,7 +78,7 @@ public class UrlController {
             logger.info("Url retrieved from redis: {}", url);
             return new RedirectView(url.longUrl());
         } catch (Throwable err) {
-            manageExceptionType(err, res);
+            setResStatus(err, res);
             logger.error("Request failed with error: {}", err.toString());
             return new FailRedirect(requestId, err.getMessage());
         }
@@ -92,23 +93,23 @@ public class UrlController {
             String validKey = key.parseKey();
             urlRedisService.checkExistsAndDelete(validKey);
             logger.info("Deleted Url from redis with key: '{}'", validKey);
-
             res.setStatus(HttpServletResponse.SC_OK);
-            UrlDeleteResPayload resPayload = new UrlDeleteResPayload(String.format("Url with key '%s' deleted successfully", validKey));
+            UrlDeleteResPayload resPayload =
+                    new UrlDeleteResPayload(String.format("Url with key '%s' deleted successfully", validKey));
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            manageExceptionType(err, res);
+            setResStatus(err, res);
             logger.error("Request failed with error: {}", err.toString());
             return new Fail(requestId, err.getMessage());
         }
     }
     
-    private static void manageExceptionType(Throwable err, HttpServletResponse res) {
+    private static void setResStatus(Throwable err, HttpServletResponse res) {
         if (err instanceof HttpException) {
             res.setStatus(((HttpException) err).getStatusCode());
         } else {
-            err.printStackTrace();
+            logger.error("Stacktrace: {}", Arrays.toString(err.getStackTrace()));
             res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         }
     }
