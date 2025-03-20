@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class KeyTest {
+class KeyPathVarTest {
 
     @Test
     void parseKeyWithValidKey() throws HttpException {
@@ -20,7 +20,7 @@ class KeyTest {
         KeyPathVar key = new KeyPathVar("Abc123");
         HttpException exception = assertThrows(HttpException.class, key::parseKey);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'key' must be 12 characters in length", exception.getMessage());
+        assertEquals("Validation errors: ['key' must be 12 characters in length]", exception.getMessage());
     }
 
     @Test
@@ -28,6 +28,14 @@ class KeyTest {
         KeyPathVar key = new KeyPathVar("Abc123!@#456");
         HttpException exception = assertThrows(HttpException.class, key::parseKey);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'key' can only have alphanumeric characters", exception.getMessage());
+        assertEquals("Validation errors: ['key' can only have alphanumeric characters]", exception.getMessage());
+    }
+
+    @Test
+    void parseKeyWithNullKey() {
+        KeyPathVar key = new KeyPathVar("Abc13!@#456");
+        HttpException exception = assertThrows(HttpException.class, key::parseKey);
+        assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
+        assertEquals("Validation errors: ['key' must be 12 characters in length, 'key' can only have alphanumeric characters]", exception.getMessage());
     }
 }

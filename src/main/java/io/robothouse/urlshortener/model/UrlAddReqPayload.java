@@ -5,14 +5,24 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
 
 public record UrlAddReqPayload(String longUrl) {
 
     public String parseLongUrl() throws HttpException {
+        ArrayList<String> validationErrors = new ArrayList<>(List.of());
+
+        // dependent checks (if else)
         if (longUrl == null || longUrl.isBlank()) {
-            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "'longUrl' cannot be null or empty");
+            validationErrors.add("'longUrl' cannot be null or empty");
         } else if (!isValidUrl()) {
-            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, "'longUrl' is not a valid URL");
+            validationErrors.add("'longUrl' is not a valid URL");
+        }
+
+        if (!validationErrors.isEmpty()) {
+            String errString = String.format("Validation errors: %s", validationErrors);
+            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, errString);
         } else {
             return longUrl;
         }

@@ -19,5 +19,5 @@ docker compose up
 ### To test the application:
 
 ```
-./gradlew clean test
+./gradlew clean build
 ```

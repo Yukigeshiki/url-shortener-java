@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-class UrlAddReqTest {
+class UrlAddReqPayloadTest {
 
     @Test
     void parseLongUrlWithValidUrl() throws HttpException {
@@ -20,7 +20,7 @@ class UrlAddReqTest {
         UrlAddReqPayload urlAddReq = new UrlAddReqPayload(null);
         HttpException exception = assertThrows(HttpException.class, urlAddReq::parseLongUrl);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'longUrl' cannot be null or empty", exception.getMessage());
+        assertEquals("Validation errors: ['longUrl' cannot be null or empty]", exception.getMessage());
     }
 
     @Test
@@ -28,7 +28,7 @@ class UrlAddReqTest {
         UrlAddReqPayload urlAddReq = new UrlAddReqPayload("");
         HttpException exception = assertThrows(HttpException.class, urlAddReq::parseLongUrl);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'longUrl' cannot be null or empty", exception.getMessage());
+        assertEquals("Validation errors: ['longUrl' cannot be null or empty]", exception.getMessage());
     }
 
     @Test
@@ -36,7 +36,7 @@ class UrlAddReqTest {
         UrlAddReqPayload urlAddReq = new UrlAddReqPayload("invalid-url");
         HttpException exception = assertThrows(HttpException.class, urlAddReq::parseLongUrl);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'longUrl' is not a valid URL", exception.getMessage());
+        assertEquals("Validation errors: ['longUrl' is not a valid URL]", exception.getMessage());
     }
 
     @Test
@@ -44,7 +44,7 @@ class UrlAddReqTest {
         UrlAddReqPayload urlAddReq = new UrlAddReqPayload("example.com");
         HttpException exception = assertThrows(HttpException.class, urlAddReq::parseLongUrl);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'longUrl' is not a valid URL", exception.getMessage());
+        assertEquals("Validation errors: ['longUrl' is not a valid URL]", exception.getMessage());
     }
 
     @Test
@@ -52,6 +52,6 @@ class UrlAddReqTest {
         UrlAddReqPayload urlAddReq = new UrlAddReqPayload("https://");
         HttpException exception = assertThrows(HttpException.class, urlAddReq::parseLongUrl);
         assertEquals(HttpServletResponse.SC_BAD_REQUEST, exception.getStatusCode());
-        assertEquals("'longUrl' is not a valid URL", exception.getMessage());
+        assertEquals("Validation errors: ['longUrl' is not a valid URL]", exception.getMessage());
     }
 }
