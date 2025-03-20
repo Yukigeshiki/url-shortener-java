@@ -42,29 +42,28 @@ public class UrlController {
             Url existingUrl = urlRedisService.get(key);
             while (existingUrl != null) {
                 if (existingUrl.longUrl().equals(validLongUrl)) {
-                    res.setStatus(HttpServletResponse.SC_OK);
-                    UrlAddResPayload resPayload = new UrlAddResPayload(key, shortUrl);
-                    logger.info("Response payload: {}", resPayload);
-                    return new Success(requestId, resPayload);
+                    return setStatusAndRespond(requestId, res, new UrlAddResPayload(key, shortUrl));
                 } else {
                     key = Url.createKey(validLongUrl + UUID.randomUUID());
                     shortUrl = baseUrl + key;
-                    existingUrl = urlRedisService.get(key);
                 }
+                existingUrl = urlRedisService.get(key);
             }
 
             Url url = new Url(key, validLongUrl, shortUrl);
             urlRedisService.add(url);
             logger.info("Added to Redis: {}", url);
-            res.setStatus(HttpServletResponse.SC_OK);
-            UrlAddResPayload resPayload = new UrlAddResPayload(key, shortUrl);
-            logger.info("Response payload: {}", resPayload);
-            return new Success(requestId, resPayload);
+            return setStatusAndRespond(requestId, res, new UrlAddResPayload(key, shortUrl));
         } catch (Throwable err) {
-            setResStatus(err, res);
-            logger.error("Request failed with error: {}", err.toString());
+            setErrStatus(err, res);
             return new Fail(requestId, err.getMessage());
         }
+    }
+
+    private static Success setStatusAndRespond(String requestId, HttpServletResponse res, UrlAddResPayload resPayload) {
+        res.setStatus(HttpServletResponse.SC_OK);
+        logger.info("Response payload: {}", resPayload);
+        return new Success(requestId, resPayload);
     }
 
     @GetMapping("/{key}")
@@ -78,8 +77,7 @@ public class UrlController {
             logger.info("Url retrieved from redis: {}", url);
             return new RedirectView(url.longUrl());
         } catch (Throwable err) {
-            setResStatus(err, res);
-            logger.error("Request failed with error: {}", err.toString());
+            setErrStatus(err, res);
             return new FailRedirect(requestId, err.getMessage());
         }
     }
@@ -99,14 +97,14 @@ public class UrlController {
             logger.info("Response payload: {}", resPayload);
             return new Success(requestId, resPayload);
         } catch (Throwable err) {
-            setResStatus(err, res);
-            logger.error("Request failed with error: {}", err.toString());
+            setErrStatus(err, res);
             return new Fail(requestId, err.getMessage());
         }
     }
-    
-    private static void setResStatus(Throwable err, HttpServletResponse res) {
+
+    private static void setErrStatus(Throwable err, HttpServletResponse res) {
         if (err instanceof HttpException) {
+            logger.error("Request failed with error: {}", err.toString());
             res.setStatus(((HttpException) err).getStatusCode());
         } else {
             logger.error("Stacktrace: {}", Arrays.toString(err.getStackTrace()));
