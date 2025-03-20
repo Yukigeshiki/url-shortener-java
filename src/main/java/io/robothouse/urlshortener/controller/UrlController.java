@@ -42,7 +42,7 @@ public class UrlController {
             Url existingUrl = urlRedisService.get(key);
             while (existingUrl != null) {
                 if (existingUrl.longUrl().equals(validLongUrl)) {
-                    return setStatusAndRespond(requestId, res, new UrlAddResPayload(key, shortUrl));
+                    return setStatusAndRespondSuccess(requestId, res, new UrlAddResPayload(key, shortUrl));
                 } else {
                     key = Url.createKey(validLongUrl + UUID.randomUUID());
                     shortUrl = baseUrl + key;
@@ -53,14 +53,14 @@ public class UrlController {
             Url url = new Url(key, validLongUrl, shortUrl);
             urlRedisService.add(url);
             logger.info("Added to Redis: {}", url);
-            return setStatusAndRespond(requestId, res, new UrlAddResPayload(key, shortUrl));
+            return setStatusAndRespondSuccess(requestId, res, new UrlAddResPayload(key, shortUrl));
         } catch (Throwable err) {
             setErrStatus(err, res);
             return new Fail(requestId, err.getMessage());
         }
     }
 
-    private static Success setStatusAndRespond(String requestId, HttpServletResponse res, UrlAddResPayload resPayload) {
+    private static Success setStatusAndRespondSuccess(String requestId, HttpServletResponse res, UrlAddResPayload resPayload) {
         res.setStatus(HttpServletResponse.SC_OK);
         logger.info("Response payload: {}", resPayload);
         return new Success(requestId, resPayload);
@@ -68,7 +68,6 @@ public class UrlController {
 
     @GetMapping("/{key}")
     public SmartView urlRedirect(@PathVariable("key") UrlKeyPathVar key, HttpServletResponse res) {
-        String requestId = MDC.get("requestId");
         logger.info("Request url param: {}", key);
 
         try {
@@ -78,7 +77,7 @@ public class UrlController {
             return new RedirectView(url.longUrl());
         } catch (Throwable err) {
             setErrStatus(err, res);
-            return new FailRedirect(requestId, err.getMessage());
+            return new FailRedirect(MDC.get("requestId"), err.getMessage());
         }
     }
 

@@ -1,4 +1,4 @@
-package io.robothouse.urlshortener.lib.log;
+package io.robothouse.urlshortener.lib.logger;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
