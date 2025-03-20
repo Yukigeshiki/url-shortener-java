@@ -1,4 +1,4 @@
-package io.robothouse.urlshortener.lib.pathvar;
+package io.robothouse.urlshortener.lib.converter;
 
 import io.robothouse.urlshortener.model.KeyPathVar;
 import org.springframework.core.convert.converter.Converter;
