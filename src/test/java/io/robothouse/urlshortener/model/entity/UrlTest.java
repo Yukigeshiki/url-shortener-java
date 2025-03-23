@@ -1,6 +1,5 @@
-package io.robothouse.urlshortener.model;
+package io.robothouse.urlshortener.model.entity;
 
-import io.robothouse.urlshortener.model.url.Url;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -9,7 +8,7 @@ class UrlTest {
 
     @Test
     void createKeyWithValidUrl() {
-        String key = Url.createKey("https://example.com");
+        String key = UrlEntity.createKey("https://example.com");
         assertEquals("100680ad546c", key);
     }
 }

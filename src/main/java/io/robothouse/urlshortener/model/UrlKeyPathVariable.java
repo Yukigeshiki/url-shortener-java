@@ -1,14 +1,13 @@
-package io.robothouse.urlshortener.model.url;
+package io.robothouse.urlshortener.model;
 
-import io.robothouse.urlshortener.lib.exception.HttpException;
-import jakarta.servlet.http.HttpServletResponse;
+import io.robothouse.urlshortener.lib.exception.BadRequestException;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public record UrlKeyPathVar(String key) {
+public record UrlKeyPathVariable(String key) {
 
-    public String parseKey() throws HttpException {
+    public String parseKey() throws BadRequestException {
         ArrayList<String> validationErrors = new ArrayList<>(List.of());
 
         // independent checks (if per check)
@@ -21,7 +20,7 @@ public record UrlKeyPathVar(String key) {
 
         if (!validationErrors.isEmpty()) {
             String errString = String.format("Validation errors: %s", validationErrors);
-            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, errString);
+            throw new BadRequestException(errString);
         } else {
             return key;
         }

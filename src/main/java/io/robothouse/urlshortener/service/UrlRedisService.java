@@ -1,10 +1,9 @@
 package io.robothouse.urlshortener.service;
 
 
-import io.robothouse.urlshortener.lib.exception.HttpException;
-import io.robothouse.urlshortener.model.url.Url;
+import io.robothouse.urlshortener.lib.exception.NotFoundException;
+import io.robothouse.urlshortener.model.entity.UrlEntity;
 import io.robothouse.urlshortener.repository.UrlRedisRepository;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,27 +16,27 @@ public class UrlRedisService {
         this.urlRedisRepository = greetingRepository;
     }
 
-    public void add(Url url) {
+    public void add(UrlEntity url) {
         urlRedisRepository.save(url);
     }
 
-    public Url get(String key) {
+    public UrlEntity get(String key) {
         return urlRedisRepository.findById(key).orElse(null);
     }
 
-    public Url checkExistsAndGet(String key) throws HttpException {
+    public UrlEntity checkExistsAndGet(String key) throws NotFoundException {
         if (urlRedisRepository.existsById(key)) {
             return urlRedisRepository.findById(key).orElse(null);
         } else {
-            throw new HttpException(HttpServletResponse.SC_NOT_FOUND, String.format(NOT_FOUND_MSG, key));
+            throw new NotFoundException(String.format(NOT_FOUND_MSG, key));
         }
     }
 
-    public void checkExistsAndDelete(String key) throws HttpException {
+    public void checkExistsAndDelete(String key) throws NotFoundException {
         if (urlRedisRepository.existsById(key)) {
             urlRedisRepository.deleteById(key);
         } else {
-            throw new HttpException(HttpServletResponse.SC_NOT_FOUND, String.format(NOT_FOUND_MSG, key));
+            throw new NotFoundException(String.format(NOT_FOUND_MSG, key));
         }
     }
 }

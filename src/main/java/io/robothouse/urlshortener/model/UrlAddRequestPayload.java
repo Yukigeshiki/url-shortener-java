@@ -1,16 +1,15 @@
-package io.robothouse.urlshortener.model.url;
+package io.robothouse.urlshortener.model;
 
-import io.robothouse.urlshortener.lib.exception.HttpException;
-import jakarta.servlet.http.HttpServletResponse;
+import io.robothouse.urlshortener.lib.exception.BadRequestException;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-public record UrlAddReqPayload(String longUrl) {
+public record UrlAddRequestPayload(String longUrl) {
 
-    public String parseLongUrl() throws HttpException {
+    public String parseLongUrl() throws BadRequestException {
         ArrayList<String> validationErrors = new ArrayList<>(List.of());
 
         // dependent checks (if else)
@@ -22,7 +21,7 @@ public record UrlAddReqPayload(String longUrl) {
 
         if (!validationErrors.isEmpty()) {
             String errString = String.format("Validation errors: %s", validationErrors);
-            throw new HttpException(HttpServletResponse.SC_BAD_REQUEST, errString);
+            throw new BadRequestException(errString);
         } else {
             return longUrl;
         }

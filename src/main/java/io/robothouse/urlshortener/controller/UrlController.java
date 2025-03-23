@@ -1,21 +1,15 @@
 package io.robothouse.urlshortener.controller;
 
-import io.robothouse.urlshortener.lib.exception.HttpException;
-import io.robothouse.urlshortener.model.response.BaseResponse;
-import io.robothouse.urlshortener.model.response.Fail;
-import io.robothouse.urlshortener.model.response.FailRedirect;
-import io.robothouse.urlshortener.model.response.Success;
-import io.robothouse.urlshortener.model.url.*;
+import io.robothouse.urlshortener.model.entity.UrlEntity;
+import io.robothouse.urlshortener.model.*;
 import io.robothouse.urlshortener.service.UrlRedisService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.SmartView;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Arrays;
 import java.util.UUID;
 
 @RestController
@@ -29,85 +23,53 @@ public class UrlController {
     }
 
     @PostMapping("/")
-    public BaseResponse urlAdd(@RequestBody UrlAddReqPayload reqPayload, HttpServletResponse res) {
-        String requestId = MDC.get("requestId");
+    @ResponseStatus(HttpStatus.CREATED)
+    public UrlAddResponsePayload urlAdd(@RequestBody UrlAddRequestPayload reqPayload) {
         String baseUrl = "http://localhost:8080/";
+
         logger.info("Request payload: {}", reqPayload);
+        String validLongUrl = reqPayload.parseLongUrl();
+        String key = UrlEntity.createKey(validLongUrl);
+        String shortUrl = baseUrl + key;
 
-        try {
-            String validLongUrl = reqPayload.parseLongUrl();
-            String key = Url.createKey(validLongUrl);
-            String shortUrl = baseUrl + key;
-
-            Url existingUrl = urlRedisService.get(key);
-            while (existingUrl != null) {
-                if (existingUrl.longUrl().equals(validLongUrl)) {
-                    return setStatusAndRespondSuccess(requestId, res, new UrlAddResPayload(key, shortUrl));
-                } else {
-                    key = Url.createKey(validLongUrl + UUID.randomUUID());
-                    shortUrl = baseUrl + key;
-                }
-                existingUrl = urlRedisService.get(key);
+        UrlEntity existingUrl = urlRedisService.get(key);
+        while (existingUrl != null) {
+            if (existingUrl.longUrl().equals(validLongUrl)) {
+                UrlAddResponsePayload resPayload = new UrlAddResponsePayload(key, shortUrl);
+                logger.info("Response payload: {}", resPayload);
+                return resPayload;
+            } else {
+                key = UrlEntity.createKey(validLongUrl + UUID.randomUUID());
+                shortUrl = baseUrl + key;
             }
-
-            Url url = new Url(key, validLongUrl, shortUrl);
-            urlRedisService.add(url);
-            logger.info("Added to Redis: {}", url);
-            return setStatusAndRespondSuccess(requestId, res, new UrlAddResPayload(key, shortUrl));
-        } catch (Throwable err) {
-            setErrStatus(err, res);
-            return new Fail(requestId, err.getMessage());
+            existingUrl = urlRedisService.get(key);
         }
-    }
 
-    private static Success setStatusAndRespondSuccess(String requestId, HttpServletResponse res, UrlAddResPayload resPayload) {
-        res.setStatus(HttpServletResponse.SC_OK);
+        UrlEntity url = new UrlEntity(key, validLongUrl, shortUrl);
+        urlRedisService.add(url);
+        logger.info("Added to Redis: {}", url);
+        UrlAddResponsePayload resPayload = new UrlAddResponsePayload(key, shortUrl);
         logger.info("Response payload: {}", resPayload);
-        return new Success(requestId, resPayload);
+
+        return resPayload;
     }
 
     @GetMapping("/{key}")
-    public SmartView urlRedirect(@PathVariable("key") UrlKeyPathVar key, HttpServletResponse res) {
-        logger.info("Request url param: {}", key);
-
-        try {
-            String validKey = key.parseKey();
-            Url url = urlRedisService.checkExistsAndGet(validKey);
-            logger.info("Url retrieved from redis: {}", url);
-            return new RedirectView(url.longUrl());
-        } catch (Throwable err) {
-            setErrStatus(err, res);
-            return new FailRedirect(MDC.get("requestId"), err.getMessage());
-        }
+    public SmartView urlRedirect(@PathVariable("key") UrlKeyPathVariable key) {
+        String validKey = key.parseKey();
+        UrlEntity url = urlRedisService.checkExistsAndGet(validKey);
+        logger.info("Url retrieved from redis: {}", url);
+        return new RedirectView(url.longUrl());
     }
 
     @DeleteMapping("/{key}")
-    public BaseResponse urlDelete(@PathVariable("key") UrlKeyPathVar key, HttpServletResponse res) {
-        String requestId = MDC.get("requestId");
-        logger.info("Request url param: {}", key);
-
-        try {
-            String validKey = key.parseKey();
-            urlRedisService.checkExistsAndDelete(validKey);
-            logger.info("Deleted Url from redis with key: '{}'", validKey);
-            res.setStatus(HttpServletResponse.SC_OK);
-            UrlDeleteResPayload resPayload =
-                    new UrlDeleteResPayload(String.format("Url with key '%s' deleted successfully", validKey));
-            logger.info("Response payload: {}", resPayload);
-            return new Success(requestId, resPayload);
-        } catch (Throwable err) {
-            setErrStatus(err, res);
-            return new Fail(requestId, err.getMessage());
-        }
-    }
-
-    private static void setErrStatus(Throwable err, HttpServletResponse res) {
-        if (err instanceof HttpException) {
-            logger.error("Request failed with error: {}", err.toString());
-            res.setStatus(((HttpException) err).getStatusCode());
-        } else {
-            logger.error("Stacktrace: {}", Arrays.toString(err.getStackTrace()));
-            res.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-        }
+    public UrlDeleteResponsePayload urlDelete(@PathVariable("key") UrlKeyPathVariable key) {
+        String validKey = key.parseKey();
+        urlRedisService.checkExistsAndDelete(validKey);
+        logger.info("Deleted Url from redis with key: '{}'", validKey);
+        UrlDeleteResponsePayload resPayload =
+                new UrlDeleteResponsePayload(String.format("Url with key '%s' deleted successfully", validKey));
+        logger.info("Response payload: {}", resPayload);
+        return resPayload;
     }
 }

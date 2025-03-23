@@ -1,4 +1,4 @@
-package io.robothouse.urlshortener.model.url;
+package io.robothouse.urlshortener.model.entity;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.redis.core.RedisHash;
@@ -8,7 +8,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 @RedisHash("Url")
-public record Url(@Id String key, String longUrl, String shortUrl) {
+public record UrlEntity(@Id String key, String longUrl, String shortUrl) {
 
     public static String createKey(String longUrl) {
         try {
