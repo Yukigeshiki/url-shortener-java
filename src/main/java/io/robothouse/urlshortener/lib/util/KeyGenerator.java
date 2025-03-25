@@ -12,7 +12,7 @@ public class KeyGenerator {
             byte[] encodedHash = digest.digest(longUrl.getBytes(StandardCharsets.UTF_8));
             return bytesToHex(encodedHash).substring(0, 12);
         } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException("SHA-256 algorithm not found", e);
+            throw new RuntimeException("Key generation failure", e);
         }
     }
 

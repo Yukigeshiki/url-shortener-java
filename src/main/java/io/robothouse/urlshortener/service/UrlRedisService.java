@@ -12,7 +12,7 @@ import java.util.Optional;
 public class UrlRedisService {
 
     private final UrlRedisRepository urlRedisRepository;
-    private final String NOT_FOUND_MSG = "Url with key '%s' does not exist";
+    private static final String NOT_FOUND_MSG = "URL with key '%s' does not exist";
 
     public UrlRedisService(UrlRedisRepository greetingRepository) {
         this.urlRedisRepository = greetingRepository;
