@@ -1,4 +1,3 @@
-# Stage 1: Build stage using JDK 23
 FROM eclipse-temurin:23 AS builder
 
 USER root
@@ -27,4 +26,4 @@ COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar", "--spring.profiles.active=prod"]

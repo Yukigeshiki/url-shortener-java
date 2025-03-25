@@ -13,7 +13,7 @@ docker compose up
 ### To run the application:
 
 ```
-./gradlew clean bootRun
+./gradlew clean bootRun --args='--spring.profiles.active=dev'
 ```
 
 ### To test the application:

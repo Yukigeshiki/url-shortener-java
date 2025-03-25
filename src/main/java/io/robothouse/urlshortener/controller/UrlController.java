@@ -33,13 +33,13 @@ public class UrlController {
         logger.info("Request payload: {}", reqPayload);
         String validLongUrl = reqPayload.parseLongUrl();
 
-        String key = generateUniqueKey(validLongUrl);
-        String shortUrl = BASE_URL + key;
+        String uniqueKey = createUniqueKey(validLongUrl);
+        String shortUrl = BASE_URL + uniqueKey;
 
-        UrlEntity url = new UrlEntity(key, validLongUrl, shortUrl);
+        UrlEntity url = new UrlEntity(uniqueKey, validLongUrl, shortUrl);
         urlRedisService.add(url);
         logger.info("Added to Redis: {}", url);
-        UrlAddResponsePayload resPayload = new UrlAddResponsePayload(key, shortUrl);
+        UrlAddResponsePayload resPayload = new UrlAddResponsePayload(uniqueKey, shortUrl);
         logger.info("Response payload: {}", resPayload);
 
         return resPayload;
@@ -64,7 +64,7 @@ public class UrlController {
         return resPayload;
     }
 
-    private String generateUniqueKey(String longUrl) {
+    private String createUniqueKey(String longUrl) {
         String key = UrlEntity.createKey(longUrl);
         Optional<UrlEntity> existingUrl = urlRedisService.get(key);
         while (existingUrl.isPresent()) {
