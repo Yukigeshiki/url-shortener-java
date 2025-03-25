@@ -31,8 +31,8 @@ public class UrlController {
     @ResponseStatus(HttpStatus.CREATED)
     public UrlAddResponsePayload urlAdd(@RequestBody UrlAddRequestPayload reqPayload) {
         logger.info("Request payload: {}", reqPayload);
-        String validLongUrl = reqPayload.parseLongUrl();
 
+        String validLongUrl = reqPayload.parseLongUrl();
         String uniqueKey = createUniqueKey(validLongUrl);
         String shortUrl = BASE_URL + uniqueKey;
 
