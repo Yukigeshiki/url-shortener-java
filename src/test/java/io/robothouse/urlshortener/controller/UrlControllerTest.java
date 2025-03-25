@@ -13,6 +13,8 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.web.servlet.SmartView;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
@@ -33,7 +35,7 @@ class UrlControllerTest {
     @Test
     void urlAddReturnsSuccessWhenUrlIsNew() {
         UrlAddRequestPayload reqPayload = new UrlAddRequestPayload("https://example.com");
-        when(urlRedisService.get(anyString())).thenReturn(null);
+        when(urlRedisService.get(anyString())).thenReturn(Optional.empty());
 
         UrlAddResponsePayload result = urlController.urlAdd(reqPayload);
 
@@ -46,7 +48,7 @@ class UrlControllerTest {
     void urlAddGeneratesNewKeyWhenCollisionOccurs() {
         UrlAddRequestPayload reqPayload = new UrlAddRequestPayload("https://example1.com");
         UrlEntity existingUrl = new UrlEntity("000000000000", "https://example2.com", "http://localhost:8080/000000000000");
-        when(urlRedisService.get(anyString())).thenReturn(existingUrl).thenReturn(null);
+        when(urlRedisService.get(anyString())).thenReturn(Optional.of(existingUrl)).thenReturn(Optional.empty());
 
         UrlAddResponsePayload result = urlController.urlAdd(reqPayload);
 

@@ -11,13 +11,17 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
 import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
 @ControllerAdvice
 public class ResponsePayloadWrapper implements ResponseBodyAdvice<Object> {
+
+    private static final String REQUEST_ID_KEY = "requestId";
+    private static final String TIMESTAMP_KEY = "timestamp";
+    private static final String PAYLOAD_KEY = "payload";
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
@@ -35,19 +39,17 @@ public class ResponsePayloadWrapper implements ResponseBodyAdvice<Object> {
             ServerHttpResponse response
     ) {
 
-        OffsetDateTime now = OffsetDateTime.now(ZoneOffset.UTC);
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
-        String timestamp = now.format(formatter);
+        String timestamp = OffsetDateTime.now().format(FORMATTER);
 
         String requestId = null;
         if (request instanceof ServletServerHttpRequest) {
             HttpServletRequest servletRequest = ((ServletServerHttpRequest) request).getServletRequest();
-            requestId = (String) servletRequest.getAttribute("requestId");
+            requestId = (String) servletRequest.getAttribute(REQUEST_ID_KEY);
         }
         Map<String, Object> wrapper = new HashMap<>();
-        wrapper.put("timestamp", timestamp);
-        wrapper.put("requestId", requestId);
-        wrapper.put("payload", body);
+        wrapper.put(TIMESTAMP_KEY, timestamp);
+        wrapper.put(REQUEST_ID_KEY, requestId);
+        wrapper.put(PAYLOAD_KEY, body);
 
         return wrapper;
     }

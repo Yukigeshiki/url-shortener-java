@@ -16,19 +16,14 @@ public record UrlEntity(@Id String key, String longUrl, String shortUrl) {
             byte[] encodedHash = digest.digest(longUrl.getBytes(StandardCharsets.UTF_8));
             return bytesToHex(encodedHash).substring(0, 12);
         } catch (NoSuchAlgorithmException e) {
-            // Algorithm is guaranteed to be available (hardcoded)
-            return null;
+            throw new RuntimeException("SHA-256 algorithm not found", e);
         }
     }
 
     private static String bytesToHex(byte[] hash) {
-        StringBuilder hexString = new StringBuilder(2 * hash.length);
+        StringBuilder hexString = new StringBuilder(hash.length * 2);
         for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
+            hexString.append(String.format("%02x", b));
         }
         return hexString.toString();
     }

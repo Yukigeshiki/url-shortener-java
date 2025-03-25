@@ -1,6 +1,7 @@
 package io.robothouse.urlshortener.model;
 
 import io.robothouse.urlshortener.lib.exception.BadRequestException;
+import org.apache.commons.lang3.StringUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,10 +11,10 @@ import java.util.List;
 public record UrlAddRequestPayload(String longUrl) {
 
     public String parseLongUrl() throws BadRequestException {
-        ArrayList<String> validationErrors = new ArrayList<>(List.of());
+        List<String> validationErrors = new ArrayList<>();
 
         // dependent checks (if else)
-        if (longUrl == null || longUrl.isBlank()) {
+        if (StringUtils.isEmpty(longUrl)) {
             validationErrors.add("'longUrl' cannot be null or empty");
         } else if (!isValidUrl()) {
             validationErrors.add("'longUrl' is not a valid URL");
@@ -22,9 +23,9 @@ public record UrlAddRequestPayload(String longUrl) {
         if (!validationErrors.isEmpty()) {
             String errString = String.format("Validation errors: %s", validationErrors);
             throw new BadRequestException(errString);
-        } else {
-            return longUrl;
         }
+
+        return longUrl;
     }
 
     private boolean isValidUrl() {

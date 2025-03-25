@@ -8,7 +8,7 @@ import java.util.List;
 public record UrlKeyPathVariable(String key) {
 
     public String parseKey() throws BadRequestException {
-        ArrayList<String> validationErrors = new ArrayList<>(List.of());
+        List<String> validationErrors = new ArrayList<>();
 
         // independent checks (if per check)
         if (key.length() != 12) {
@@ -21,8 +21,8 @@ public record UrlKeyPathVariable(String key) {
         if (!validationErrors.isEmpty()) {
             String errString = String.format("Validation errors: %s", validationErrors);
             throw new BadRequestException(errString);
-        } else {
-            return key;
         }
+
+        return key;
     }
 }

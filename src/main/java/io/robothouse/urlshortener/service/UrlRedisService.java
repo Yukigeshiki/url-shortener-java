@@ -6,6 +6,8 @@ import io.robothouse.urlshortener.model.entity.UrlEntity;
 import io.robothouse.urlshortener.repository.UrlRedisRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 public class UrlRedisService {
 
@@ -20,16 +22,13 @@ public class UrlRedisService {
         urlRedisRepository.save(url);
     }
 
-    public UrlEntity get(String key) {
-        return urlRedisRepository.findById(key).orElse(null);
+    public Optional<UrlEntity> get(String key) {
+        return urlRedisRepository.findById(key);
     }
 
     public UrlEntity checkExistsAndGet(String key) throws NotFoundException {
-        if (urlRedisRepository.existsById(key)) {
-            return urlRedisRepository.findById(key).orElse(null);
-        } else {
-            throw new NotFoundException(String.format(NOT_FOUND_MSG, key));
-        }
+        return urlRedisRepository.findById(key)
+                .orElseThrow(() -> new NotFoundException(String.format(NOT_FOUND_MSG, key)));
     }
 
     public void checkExistsAndDelete(String key) throws NotFoundException {
