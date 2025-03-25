@@ -1,5 +1,6 @@
 package io.robothouse.urlshortener.controller;
 
+import io.robothouse.urlshortener.lib.util.KeyGenerator;
 import io.robothouse.urlshortener.model.UrlAddRequestPayload;
 import io.robothouse.urlshortener.model.UrlAddResponsePayload;
 import io.robothouse.urlshortener.model.UrlDeleteResponsePayload;
@@ -33,7 +34,7 @@ public class UrlController {
         logger.info("Request payload: {}", reqPayload);
 
         String validLongUrl = reqPayload.parseLongUrl();
-        String uniqueKey = createUniqueKey(validLongUrl);
+        String uniqueKey = getUniqueKey(validLongUrl);
         String shortUrl = BASE_URL + uniqueKey;
 
         UrlEntity url = new UrlEntity(uniqueKey, validLongUrl, shortUrl);
@@ -64,14 +65,14 @@ public class UrlController {
         return resPayload;
     }
 
-    private String createUniqueKey(String longUrl) {
-        String key = UrlEntity.createKey(longUrl);
+    private String getUniqueKey(String longUrl) {
+        String key = KeyGenerator.getKey(longUrl);
         Optional<UrlEntity> existingUrl = urlRedisService.get(key);
         while (existingUrl.isPresent()) {
             if (existingUrl.get().longUrl().equals(longUrl)) {
                 return key;
             } else {
-                key = UrlEntity.createKey(longUrl + UUID.randomUUID());
+                key = KeyGenerator.getKey(longUrl + UUID.randomUUID());
             }
             existingUrl = urlRedisService.get(key);
         }
