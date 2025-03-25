@@ -21,11 +21,10 @@ public class ResponsePayloadWrapper implements ResponseBodyAdvice<Object> {
     private static final String REQUEST_ID_KEY = "requestId";
     private static final String TIMESTAMP_KEY = "timestamp";
     private static final String PAYLOAD_KEY = "payload";
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ISO_OFFSET_DATE_TIME;
 
     @Override
     public boolean supports(MethodParameter returnType, Class<? extends HttpMessageConverter<?>> converterType) {
-        // Apply to all responses
+        // apply to all responses
         return true;
     }
 
@@ -39,7 +38,7 @@ public class ResponsePayloadWrapper implements ResponseBodyAdvice<Object> {
             ServerHttpResponse response
     ) {
 
-        String timestamp = OffsetDateTime.now().format(FORMATTER);
+        String timestamp = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
 
         String requestId = null;
         if (request instanceof ServletServerHttpRequest) {

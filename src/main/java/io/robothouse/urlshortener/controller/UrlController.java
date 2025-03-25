@@ -9,6 +9,7 @@ import io.robothouse.urlshortener.model.entity.UrlEntity;
 import io.robothouse.urlshortener.service.UrlRedisService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.SmartView;
@@ -21,8 +22,10 @@ import java.util.UUID;
 public class UrlController {
 
     private static final Logger logger = LoggerFactory.getLogger(UrlController.class);
-    private static final String BASE_URL = "http://localhost:8080/";
     private final UrlRedisService urlRedisService;
+
+    @Value("${server.baseurl}")
+    private String BASE_URL;
 
     public UrlController(UrlRedisService urlRedisService) {
         this.urlRedisService = urlRedisService;
@@ -34,13 +37,27 @@ public class UrlController {
         logger.info("Request payload: {}", reqPayload);
 
         String validLongUrl = reqPayload.parseLongUrl();
-        String uniqueKey = getUniqueKey(validLongUrl);
-        String shortUrl = BASE_URL + uniqueKey;
+        String key = KeyGenerator.getKey(validLongUrl);
 
-        UrlEntity url = new UrlEntity(uniqueKey, validLongUrl, shortUrl);
+        Optional<UrlEntity> existingUrl = urlRedisService.get(key);
+        while (existingUrl.isPresent()) {
+            if (existingUrl.get().longUrl().equals(validLongUrl)) {
+                // URL already exists in Redis
+                UrlAddResponsePayload resPayload = new UrlAddResponsePayload(key, BASE_URL + key);
+                logger.info("Response payload: {}", resPayload);
+                return resPayload;
+            } else {
+                // collision, generate new key and re-check
+                key = KeyGenerator.getKey(validLongUrl + UUID.randomUUID());
+                existingUrl = urlRedisService.get(key);
+            }
+        }
+
+        String shortUrl = BASE_URL + key;
+        UrlEntity url = new UrlEntity(key, validLongUrl, shortUrl);
         urlRedisService.add(url);
         logger.info("Added to Redis: {}", url);
-        UrlAddResponsePayload resPayload = new UrlAddResponsePayload(uniqueKey, shortUrl);
+        UrlAddResponsePayload resPayload = new UrlAddResponsePayload(key, shortUrl);
         logger.info("Response payload: {}", resPayload);
 
         return resPayload;
@@ -50,7 +67,7 @@ public class UrlController {
     public SmartView urlRedirect(@PathVariable("key") UrlKeyPathVariable key) {
         String validKey = key.parseKey();
         UrlEntity url = urlRedisService.checkExistsAndGet(validKey);
-        logger.info("Url retrieved from redis: {}", url);
+        logger.info("URL retrieved from redis: {}", url);
         return new RedirectView(url.longUrl());
     }
 
@@ -58,24 +75,10 @@ public class UrlController {
     public UrlDeleteResponsePayload urlDelete(@PathVariable("key") UrlKeyPathVariable key) {
         String validKey = key.parseKey();
         urlRedisService.checkExistsAndDelete(validKey);
-        logger.info("Deleted Url from redis with key: '{}'", validKey);
+        logger.info("Deleted URL from redis with key: '{}'", validKey);
         UrlDeleteResponsePayload resPayload =
-                new UrlDeleteResponsePayload(String.format("Url with key '%s' deleted successfully", validKey));
+                new UrlDeleteResponsePayload(String.format("URL with key '%s' deleted successfully", validKey));
         logger.info("Response payload: {}", resPayload);
         return resPayload;
-    }
-
-    private String getUniqueKey(String longUrl) {
-        String key = KeyGenerator.getKey(longUrl);
-        Optional<UrlEntity> existingUrl = urlRedisService.get(key);
-        while (existingUrl.isPresent()) {
-            if (existingUrl.get().longUrl().equals(longUrl)) {
-                return key;
-            } else {
-                key = KeyGenerator.getKey(longUrl + UUID.randomUUID());
-            }
-            existingUrl = urlRedisService.get(key);
-        }
-        return key;
     }
 }

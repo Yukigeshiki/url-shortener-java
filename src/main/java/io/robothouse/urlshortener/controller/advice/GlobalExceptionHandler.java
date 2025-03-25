@@ -19,33 +19,30 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity<Object> handleBadRequestException(BadRequestException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", e.getMessage());
-        response.put("status", e.getStatus().value());
-        response.put("type", e.getStatus().name());
-
+        Map<String, Object> response = buildResponseMap(e.getMessage(), e.getStatus());
         return new ResponseEntity<>(response, e.getStatus());
     }
 
     @ExceptionHandler(NotFoundException.class)
     public ResponseEntity<Object> handleNotFoundException(NotFoundException e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", e.getMessage());
-        response.put("status", e.getStatus().value());
-        response.put("type", e.getStatus().name());
-
+        Map<String, Object> response = buildResponseMap(e.getMessage(), e.getStatus());
         return new ResponseEntity<>(response, e.getStatus());
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Object> handleException(Exception e) {
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", e.getMessage());
-        response.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
-        response.put("type", HttpStatus.INTERNAL_SERVER_ERROR);
-
-        logger.error("Stacktrace: {}", (Object) e.getStackTrace());
-
+        Map<String, Object> response = buildResponseMap(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        logger.error(
+                "Stacktrace for {}: {}", e.getCause() != null ? e.getCause() : "Unknown Error", e.getStackTrace()
+        );
         return new ResponseEntity<>(response, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    private static Map<String, Object> buildResponseMap(String message, HttpStatus status) {
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        response.put("status", status.value());
+        response.put("type", status.name());
+        return response;
     }
 }

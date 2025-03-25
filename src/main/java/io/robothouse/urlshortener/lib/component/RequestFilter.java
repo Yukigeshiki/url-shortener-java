@@ -18,8 +18,8 @@ import java.util.UUID;
 public class RequestFilter extends OncePerRequestFilter {
 
     private static final Logger logger = LoggerFactory.getLogger(RequestFilter.class);
-    public static final String REQUEST_ID_KEY = "requestId";
-    public static final String REQUEST_ID_HEADER = "X-Request-ID";
+    private static final String REQUEST_ID_KEY = "requestId";
+    private static final String REQUEST_ID_HEADER = "X-Request-ID";
 
     @Override
     protected void doFilterInternal(
@@ -28,10 +28,7 @@ public class RequestFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
-        String requestId = request.getHeader(REQUEST_ID_HEADER);
-        if (StringUtils.isEmpty(requestId)) {
-            requestId = UUID.randomUUID().toString();
-        }
+        String requestId = UUID.randomUUID().toString();
 
         MDC.put(REQUEST_ID_KEY, requestId);
         response.addHeader(REQUEST_ID_HEADER, requestId);
