@@ -7,6 +7,7 @@ import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServerHttpResponse;
 import org.springframework.http.server.ServletServerHttpRequest;
+import lombok.NonNull;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
@@ -31,11 +32,11 @@ public class ResponsePayloadWrapper implements ResponseBodyAdvice<Object> {
     @Override
     public Object beforeBodyWrite(
             Object body,
-            MethodParameter returnType,
-            MediaType selectedContentType,
-            Class<? extends HttpMessageConverter<?>> selectedConverterType,
-            ServerHttpRequest request,
-            ServerHttpResponse response
+            @NonNull MethodParameter returnType,
+            @NonNull MediaType selectedContentType,
+            @NonNull Class<? extends HttpMessageConverter<?>> selectedConverterType,
+            @NonNull ServerHttpRequest request,
+            @NonNull ServerHttpResponse response
     ) {
 
         String timestamp = OffsetDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);

@@ -4,9 +4,7 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -14,10 +12,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.UUID;
 
+@Log4j2
 @Component
 public class RequestFilter extends OncePerRequestFilter {
 
-    private static final Logger logger = LoggerFactory.getLogger(RequestFilter.class);
     private static final String REQUEST_ID_KEY = "requestId";
     private static final String REQUEST_ID_HEADER = "X-Request-ID";
 
@@ -35,7 +33,7 @@ public class RequestFilter extends OncePerRequestFilter {
         request.setAttribute(REQUEST_ID_KEY, requestId);
 
         // log incoming request info
-        logger.info("Incoming request: {} {}", request.getMethod(), request.getRequestURI());
+        log.info("Incoming request: {} {}", request.getMethod(), request.getRequestURI());
 
         try {
             filterChain.doFilter(request, response);
