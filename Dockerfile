@@ -22,7 +22,7 @@ RUN chmod +x gradlew && ./gradlew bootJar --no-daemon --stacktrace --info
 FROM eclipse-temurin:23-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /home/gradle/project/build/libs/*.jar app.jar
+COPY --from=builder /home/gradle/project/app/build/libs/*.jar app.jar
 
 EXPOSE 8080
 
